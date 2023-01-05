@@ -4,6 +4,11 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 
+# for contact form
+from .models import Contact
+# for file
+from .models import FileUpload
+
 
 def SignupPage(request):
     if request.method == 'POST':
@@ -20,9 +25,33 @@ def SignupPage(request):
     return render(request, 'signup.html')
 
 
-@login_required(login_url='login')
+# @login_required(login_url='login')
 def HomePage(request):
-    return render(request, 'home.html')
+    data = Contact.objects.all()
+    file_data = FileUpload.objects.all()
+    # print(data)
+    if request.method == 'POST':
+        contact = Contact()
+        visitorname = request.POST.get('name')
+        visitoremail = request.POST.get('email')
+        visitorproject = request.POST.get('project')
+        visitormessage = request.POST.get('message')
+
+        contact.name = visitorname
+        contact.email = visitoremail
+        contact.project = visitorproject
+        contact.message = visitormessage
+
+        document = FileUpload()
+        visitorfile = request.FILES['file']
+        filename = visitorfile.name
+        document.file = visitorfile
+        # document = FileUpload.objects.create(file=visitorfile)
+        document.save()
+
+        contact.save()
+        return HttpResponse("Your contact has been saved successfully")
+    return render(request, 'home.html', {"data": data, "file_data": file_data})
 
 
 def LoginPage(request):
@@ -47,3 +76,11 @@ def LogOut(request):
 
 def Wrong(request):
     return render(request, 'wrong.html')
+
+
+def Main(request):
+    return render(request, 'main.html')
+
+
+def add_new_post(request):
+    return render(request, 'add-new-post.html')
